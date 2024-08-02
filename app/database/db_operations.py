@@ -12,7 +12,7 @@ async def initialize_db():
         CREATE TABLE IF NOT EXISTS markets (
             type TEXT,
             id TEXT,
-            name TEXT,
+            name TEXT UNIQUE,
             sub_name TEXT,
             local_name TEXT,
             local_name_trans TEXT,
@@ -58,7 +58,7 @@ async def fetch_data(value='*', condition=''):
 async def insert_data(marketvals):
     conn = await get_db_connection()
     try:
-        await conn.execute('INSERT INTO markets (type,id,name,sub_name,local_name,local_name_trans,value,high,low,close,change,change_percent,tolerance,time,datetime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', (*marketvals,))
+        await conn.execute('INSERT INTO markets (type,id,name,sub_name,local_name,local_name_trans,value,high,low,close,change,change_percent,tolerance,time,datetime) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT (name) DO UPDATE SET value = EXCLUDED.value,high = EXCLUDED.high,low= EXCLUDED.low,close= EXCLUDED.close,change= EXCLUDED.change,change_percent= EXCLUDED.change_percent,tolerance = EXCLUDED.tolerance,time = EXCLUDED.time,datetime= EXCLUDED.datetime', (*marketvals,))
         await conn.commit()
     finally:
         await conn.close()
